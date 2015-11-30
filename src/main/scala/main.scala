@@ -2,42 +2,49 @@
  * Created by tongx on 11/20/15.
  */
 
-import com.tongx.crawlcorruption.CrawledCorruptionArticle
-import net.liftweb.json._
-
+//add Jar files for each worker
 sc.addJar("CrawledCorruptionArticle.jar")
-val test = new JsonArticles("tmp", List(), "NYTimesLinks_tmp.txt")
+
+//////////////////////////////////////////////////////////////////
+// First Step: get url of all articles, and save in a text file //
+//////////////////////////////////////////////////////////////////
+val links = new Links("politics", 2001, false)
+val mylinks = links.getAllLinks()
+/*
+A headless browser is a web browser without a graphical user interface.
+Headless browsers provide automated control of a web page in an environment similar to popular web browsers,
+but are executed via a command line interface or using network communication.
+
+PhantomJS is a scripted, headless browser used for automating web page interaction. PhantomJS provides a
+JavaScript API enabling automated navigation, screenshots, user behavior
+
+PhantomJS mimics legitimate user traffic and behaviors
+*/
+links.saveAsTextFile("./", mylinks)
 
 
-val rst = sc.textFile(test.hdfsPath).
-  map(x => test.tokenize(x)).
-  map( x => (x._1, test.filterStopWords(x._2))).
-  flatMap(x => test.words(x._1, x._2)).
-  reduceByKey(_+_).
-  map(words => (words._1._1, (words._1._2, words._2))).
-  groupByKey().
-  map(x => (x._1, x._2.toArray.sortBy(y => (-y._2, y._1)))).
-  map(x => (x._1, x._2.take(5))).saveAsObjectFile("/user/tongx/BigDataProj/token/tmp")
-
-sc.objectFile[Array[(String, Array[(String, Int)])]]("/user/tongx/BigDataProj/token/tmp")
-
-
+///////////////////////////////////////////////////////////////////////////////////////////
+// Second Step: Download article from each url, save each article as JSON string on HDFS //
+///////////////////////////////////////////////////////////////////////////////////////////
+val test = new JsonArticles("politics", List(), "NYTimesLinks_politics.txt")
+// alternate //
+val test_alter = new JsonArticles("politics", mylinks, "")
 
 /*
-TODO:
-1) save corruption dictionary words to Hardrvie as Json string     (done)
-2) write a function which input is HDFS path of articles, output is RDD[my CorruptionArticle]  (done)
-3) redefine my CorruptionArticle class which include a method named tokenize  (done)
+parsing the url using jsoup package, save article information as an object named CrawledCorruptionArticle
+and then save the object as Json string on HDFS
 */
+test.saveOnHDFS(100)
 
-val hdfsPath: String = "/user/tongx/BigDataProj/articles/tmp"
-
-def parseString(article: String) = {
-  implicit val formats = DefaultFormats
-  val articleJson = parse(article)
-  articleJson.extract[CrawledCorruptionArticle]
-}
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Third Step: read in JSON string from HDFS and tokenize to single words and order by frequency //
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/* readback is RDD of CrawledCorruptionArticle */
+val readback = test.readFromHDFS().map(_.tokenize(true))
 
 
-sc.textFile(hdfsPath).map(x => parseString(x)).map(_.tokenize(true)).take(10)
+val dictionary = new FBIarticles
 
+val dict = dictionary.topWords("/user/panc/stat598bigdata/fbi-public-corruption-articles", 1000)
+
+dictionary.dictToTextFile("./", dict)

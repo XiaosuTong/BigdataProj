@@ -3,17 +3,24 @@
  * Created by tongx on 11/13/15.
  */
 
-class Links(_section: String, _start_year: Int, _allRst: Boolean) {
+import org.openqa.selenium.remote.DesiredCapabilities
+import org.openqa.selenium.phantomjs.PhantomJSDriver
+import scala.collection.JavaConversions._
+import java.io._
 
-  import org.openqa.selenium.remote.DesiredCapabilities
-  import org.openqa.selenium.phantomjs.PhantomJSDriver
-  import scala.collection.JavaConversions._
-  import java.io._
+class Links(_section: String, _start_year: Int, _allRst: Boolean) {
 
   def allRst(x: Boolean): String = x match {
     case true => "/allresults"
     case false => "/document_type%3A%22article%22"
   }
+
+  val docType: String = allRst(_allRst)
+  val phantom_path: String = "/home/tongx/Github/phantomjs/bin/phantomjs" //on Hathi
+  val section: String = _section
+  // allLinks will contain all url as a list of string
+  var allLinks: List[String] = List()
+
 
   def getSomeLinks(driver: PhantomJSDriver): List[String] = {
     var nextpage: Boolean = true
@@ -23,6 +30,7 @@ class Links(_section: String, _start_year: Int, _allRst: Boolean) {
       iter = iter + 1
       println(s"In iteration $iter")
       println("getting new links... \n")
+      // newlinks is a list of string with length 10, it is 10 url on each page
       val newlinks: List[String] = driver.findElementsByCssSelector("#searchResults a").map(x => x.getAttribute("href")).toList.distinct
       println(newlinks.length)
       println("appending new links to allLinks \n")
@@ -38,11 +46,6 @@ class Links(_section: String, _start_year: Int, _allRst: Boolean) {
     }
     partAllLinks
   }
-
-  val docType: String = allRst(_allRst)
-  val phantom_path: String = "/home/tongx/Github/phantomjs/bin/phantomjs" //on Hathi
-  val section: String = _section
-  var allLinks:List[String] = List()
 
   def getAllLinks(): List[String] = {
     for (year <- _start_year to 2015; month <- List(1, 4, 7, 10)) {

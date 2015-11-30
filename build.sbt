@@ -22,13 +22,11 @@ scalaVersion := "2.11.7"
 resolvers += "Local couchdb-scala repo" at (baseDirectory.value / "lib/couchdb-scala_2.11").toURI.toString
 
 libraryDependencies ++= Seq(
-  "com.ibm" % "couchdb-scala_2.11" % "0.6.0",
   "org.jsoup" % "jsoup" % "1.7.2",
   "commons-codec" % "commons-codec" % "1.9",
   "com.github.detro.ghostdriver" % "phantomjsdriver" % "1.1.0",
   "org.slf4j" % "slf4j-nop" % "1.7.10",
   "net.liftweb" % "lift-json_2.11" % "2.6",
-//  "net.liftweb" % "lift-json_2.10" % "2.6",
   "com.google.code.gson" % "gson" % "2.3.1" ,
   "org.apache.spark" %% "spark-yarn" % "1.5.2" % "provided"
 )

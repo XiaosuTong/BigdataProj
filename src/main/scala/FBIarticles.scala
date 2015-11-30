@@ -18,8 +18,9 @@ class FBIarticles extends Serializable {
     val content = parseString(article).content
     content.replaceAll("[^A-Za-z ]+", "").toLowerCase().split(" +").toList
   }
+
   def filterStopWords(target: List[String]) = {
-    object Stopwords {
+    object stopWords {
       val EN = """a
 a's
 able
@@ -592,11 +593,11 @@ yourselves
 z
 zero"""
     }
-    val stopWords = Stopwords.EN.split("\n").toList
-    target.filterNot(xInstance => stopWords.exists(yInstance => yInstance == xInstance))
+    val stopWordsList = stopWords.EN.split("\n").toList
+    target.filterNot(xInstance => stopWordsList.exists(yInstance => yInstance == xInstance))
   }
 
-  def topWords(hdfsPath: String, top: Int) {
+  def topWords(hdfsPath: String, top: Int): Array[(String, Int)] = {
     sc.wholeTextFiles(hdfsPath).
       filter(x => x._2.length != 0).
       map(x => tokenize(x._2)).

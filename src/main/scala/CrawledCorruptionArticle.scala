@@ -15,6 +15,7 @@ label: String) extends Serializable {
   def getTime = time
   def getTitle = title
   def getLabel = label
+
   def filterStopWords(target: List[String]) = {
     object Stopwords {
       val EN = """a

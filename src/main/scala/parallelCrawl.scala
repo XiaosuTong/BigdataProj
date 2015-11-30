@@ -188,7 +188,6 @@ object parallelCrawl extends App {
   val hdfsPath: String = "hdfs://" + "hathi-adm.rcac.purdue.edu:8020" + "/user/tongx/BigDataProj/articles/" + section
 
 
-  linksRDD.filter(x => pageFilter(x)).map(x => saveContents(x)).saveAsTextFile(hdfsPath)
 
   case class CrawledCorruptionArticle(fetchTime: String, time: String, title: String, content: String, label: String = section)
 
