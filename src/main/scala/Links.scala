@@ -40,7 +40,7 @@ class Links(_section: String, _start_year: Int, _allRst: Boolean) {
         driver.findElementByCssSelector(".next").click()
         Thread.sleep(5000)
       }
-      if (iter >= 101) {
+      if (iter > 101) {
         nextpage = false
       }
     }
